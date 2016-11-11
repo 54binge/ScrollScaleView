@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+方向
+透明度
+刻度线长
+刻度线短
+刻度间隔
+最大值
+最小值
+一大格为几小格
+文字距刻度距离
+文字大小
+-->
+<resources>
+    <declare-styleable name="ScrollScaleView">
+        <attr name="scaleview_orientation" format="enum">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+        <attr name="scaleview_sides_alpha" format="integer" />
+        <attr name="scaleview_long_line" format="dimension" />
+        <attr name="scaleview_short_line" format="dimension" />
+        <attr name="scaleview_line_margin" format="dimension" />
+        <attr name="scaleview_max_value" format="integer"/>
+        <attr name="scaleview_min_value" format="integer"/>
+        <attr name="scaleview_multiple" format="integer"/>
+        <attr name="scaleview_text_scale_margin" format="dimension" />
+        <attr name="scaleview_text_size" format="dimension" />
+    </declare-styleable>
+</resources>
