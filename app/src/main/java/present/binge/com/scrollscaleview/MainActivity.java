@@ -1,5 +1,6 @@
 package present.binge.com.scrollscaleview;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
@@ -14,18 +15,32 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView tv = (TextView) findViewById(R.id.tv);
+        final TextView tv = (TextView) findViewById(R.id.tv);
 
-        List list = new ArrayList(10);
-        for (int i = 1; i <= 10; i++) {
+        List list = new ArrayList(100);
+        for (int i = 1; i <= 100; i++) {
             list.add("a" + i);
         }
 
         ScalePickView s = (ScalePickView) findViewById(R.id.ssv);
         s.setRangeDataList(list);
+        s.setCurrentValue("a3");
+//        s.setTextColor(Color.BLUE);
+//        s.setScaleColor(Color.CYAN);
+//        s.setCurrenValuePosition(3);
+        tv.setText(s.getCurrentValue());
 //        s.setCurrenValuePosition(list.size()-1);
-//        ScrollScaleView s = (ScrollScaleView) findViewById(R.id.ssv);
-//        s.setRangeDataList(list);
+        s.setScaleColor(Color.parseColor("#d3d3d4"));
+        s.setTextColor(Color.parseColor("#d3d3d4"));
+        s.setLineMargin(40);
+        s.setLongLineLength(86);
+        s.setOnScrollListener(new ScrollScaleView.OnScrollListener() {
+            @Override
+            public void onScrollCompleted(String value) {
+                tv.setText(value);
+            }
+        });
+//        s.needBottomLine(false);
 //
 //        ScrollScaleView s2 = (ScrollScaleView) findViewById(R.id.ssv2);
 //        s2.setRangeDataList(list);

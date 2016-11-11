@@ -1,13 +1,10 @@
 package present.binge.com.scrollscaleview;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
+import android.support.annotation.IntRange;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.FrameLayout;
 
 import java.util.List;
@@ -18,13 +15,8 @@ import java.util.List;
 public class ScalePickView extends FrameLayout {
     private static final String TAG = "ScalePickView";
 
-    private Paint mPaint = new Paint();
-    private
-    @ColorInt
-    int mPointerColor = Color.RED;
     private ScrollScaleView mScrollScaleView;
-
-    private int mPointerLength;
+    private Pointer mPointer;
 
     public void setRangeDataList(List mRangeDataList) {
         mScrollScaleView.setRangeDataList(mRangeDataList);
@@ -32,49 +24,97 @@ public class ScalePickView extends FrameLayout {
 
     public ScalePickView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initAttrs(attrs);
         initUI(context, attrs);
     }
 
     public ScalePickView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        initAttrs(attrs);
         initUI(context, attrs);
     }
 
     private void initUI(Context context, AttributeSet attrs) {
-        setWillNotDraw(false);
         mScrollScaleView = new ScrollScaleView(context, attrs);
+        mPointer = new Pointer(context, attrs);
         addView(mScrollScaleView);
+        addView(new MaskView(context));
+        addView(mPointer);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        mPaint.setAntiAlias(true);
-        mPaint.setDither(true);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(mPointerColor);
-        drawPointer(canvas);
+    public void setCurrentValuePosition(int mCurrenValuePosition) {
+        mScrollScaleView.setCurrentValuePosition(mCurrenValuePosition);
     }
 
-    private void initAttrs(AttributeSet attrs) {
-        TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ScrollScaleView);
-        if (typedArray != null) {
-            mPointerLength = typedArray.getDimensionPixelOffset(R.styleable.ScrollScaleView_scaleview_long_line, 50);
-            typedArray.recycle();
-        }
+    public void setCurrentValue(String defaultValue) {
+        mScrollScaleView.setCurrentValue(defaultValue);
     }
 
-    private void drawPointer(Canvas canvas) {
-        canvas.drawLine(getWidth() / 2, getHeight(), getWidth() / 2, getHeight() - mPointerLength, mPaint);
-    }
-
-    public void setCurrenValuePosition(int mCurrenValuePosition) {
-        mScrollScaleView.setCurrenValuePosition(mCurrenValuePosition);
-    }
-
-    private void setOnScrollListener(ScrollScaleView.OnScrollListener onScrollListener){
+    public void setOnScrollListener(ScrollScaleView.OnScrollListener onScrollListener) {
         mScrollScaleView.setOnScrollListener(onScrollListener);
     }
+
+    public String getCurrentValue() {
+        return mScrollScaleView.getCurrentValue();
+    }
+
+    public void setOrientation(@ScrollScaleView.ORIENTATION int orientation) {
+        mScrollScaleView.setOrientation(orientation);
+    }
+
+    public void setMinValue(int minValue) {
+        mScrollScaleView.setMinValue(minValue);
+    }
+
+    public void setMaxValue(int maxValue) {
+        mScrollScaleView.setMaxValue(maxValue);
+    }
+
+    public void setScaleColor(@ColorInt int scaleColor) {
+        mScrollScaleView.setScaleColor(scaleColor);
+    }
+
+    public void setSideAlphaRate(@IntRange(from = 0, to = 100) int sideAlphaRate) {
+        mScrollScaleView.setSideAlphaRate(sideAlphaRate);
+    }
+
+    public void setLongLineLength(int longLineLength) {
+        mScrollScaleView.setLongLineLength(longLineLength);
+        setPointerLength(longLineLength);
+    }
+
+    public void setShortLineLength(int shortLineLength) {
+        mScrollScaleView.setShortLineLength(shortLineLength);
+    }
+
+    public void setLineMargin(int lineMargin) {
+        mScrollScaleView.setLineMargin(lineMargin);
+    }
+
+    public void setTextScaleMargin(int textScaleMargin) {
+        mScrollScaleView.setTextScaleMargin(textScaleMargin);
+    }
+
+    public void setTextSize(int textSize) {
+        mScrollScaleView.setTextSize(textSize);
+    }
+
+    public void setTextColor(int textColor) {
+        mScrollScaleView.setTextColor(textColor);
+    }
+
+    public void setTypeface(Typeface typeface) {
+        mScrollScaleView.setTypeface(typeface);
+    }
+
+    public void needBottomLine(boolean needBottomLine) {
+        mScrollScaleView.needBottomLine(needBottomLine);
+    }
+
+    public void setPointerLength(int pointerLength) {
+        mPointer.setPointerLength(pointerLength);
+    }
+
+    public void setPointerWidth(int pointerWidth) {
+        mPointer.setPointerWidth(pointerWidth);
+    }
+
 }
