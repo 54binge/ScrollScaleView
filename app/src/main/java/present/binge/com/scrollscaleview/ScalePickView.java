@@ -3,8 +3,9 @@ package present.binge.com.scrollscaleview;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
-import android.support.annotation.IntRange;
+import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class ScalePickView extends FrameLayout {
 
     private ScrollScaleView mScrollScaleView;
     private Pointer mPointer;
+    private FrameLayout mMaskLayout;
 
     public void setRangeDataList(List mRangeDataList) {
         mScrollScaleView.setRangeDataList(mRangeDataList);
@@ -35,8 +37,9 @@ public class ScalePickView extends FrameLayout {
     private void initUI(Context context, AttributeSet attrs) {
         mScrollScaleView = new ScrollScaleView(context, attrs);
         mPointer = new Pointer(context, attrs);
+        mMaskLayout = new FrameLayout(context, attrs);
         addView(mScrollScaleView);
-        addView(new MaskView(context));
+        addView(mMaskLayout);
         addView(mPointer);
     }
 
@@ -70,10 +73,6 @@ public class ScalePickView extends FrameLayout {
 
     public void setScaleColor(@ColorInt int scaleColor) {
         mScrollScaleView.setScaleColor(scaleColor);
-    }
-
-    public void setSideAlphaRate(@IntRange(from = 0, to = 100) int sideAlphaRate) {
-        mScrollScaleView.setSideAlphaRate(sideAlphaRate);
     }
 
     public void setLongLineLength(int longLineLength) {
@@ -117,4 +116,11 @@ public class ScalePickView extends FrameLayout {
         mPointer.setPointerWidth(pointerWidth);
     }
 
+    public void setMask(View view){
+        mMaskLayout.addView(view);
+    }
+
+    public void setMask(@DrawableRes int resId){
+        mMaskLayout.setBackgroundResource(resId);
+    }
 }

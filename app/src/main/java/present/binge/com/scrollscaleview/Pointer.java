@@ -13,8 +13,8 @@ import android.view.View;
  * Created by Administrator on 2016/11/15.
  */
 public class Pointer extends View {
-    private int mPointerLength;
-    private int mPointerWidth;
+    private float mPointerLength;
+    private float mPointerWidth;
     private Paint mPaint = new Paint();
     private
     @ColorInt
@@ -51,15 +51,15 @@ public class Pointer extends View {
 
         // 处理宽高都为 wrap_content 的情况
         if (widthSpecMode == MeasureSpec.AT_MOST && heightSpecMode == MeasureSpec.AT_MOST) {
-            setMeasuredDimension(mPointerWidth, mPointerLength);
+            setMeasuredDimension((int) mPointerWidth, (int) mPointerLength);
         }
         // 处理宽为 wrap_content 的情况
         else if (widthSpecMode == MeasureSpec.AT_MOST && heightSpecMode != MeasureSpec.AT_MOST) {
-            setMeasuredDimension(mPointerWidth, heightSpecSize);
+            setMeasuredDimension((int) mPointerWidth, heightSpecSize);
         }
         // 处理高为 wrap_content 的情况
         else if (heightSpecMode == MeasureSpec.AT_MOST && widthSpecMode != MeasureSpec.AT_MOST) {
-            setMeasuredDimension(widthSpecSize, mPointerLength);
+            setMeasuredDimension(widthSpecSize, (int) mPointerLength);
         } else {
             setMeasuredDimension(widthSpecSize, heightSpecSize);
         }
@@ -72,8 +72,8 @@ public class Pointer extends View {
     private void initAttrs(AttributeSet attrs) {
         TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ScrollScaleView);
         if (typedArray != null) {
-            mPointerLength = typedArray.getDimensionPixelOffset(R.styleable.ScrollScaleView_scaleview_long_line, 50);
-            mPointerWidth = typedArray.getDimensionPixelOffset(R.styleable.ScrollScaleView_scaleview_pointer_width, 3);
+            mPointerLength = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_long_line, 50f);
+            mPointerWidth = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_pointer_width, 3f);
             typedArray.recycle();
         }
     }

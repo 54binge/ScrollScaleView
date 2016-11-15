@@ -25,8 +25,6 @@ public class MainActivity extends AppCompatActivity {
         ScalePickView s = (ScalePickView) findViewById(R.id.ssv);
         s.setRangeDataList(list);
         s.setCurrentValue("a3");
-//        s.setTextColor(Color.BLUE);
-//        s.setScaleColor(Color.CYAN);
 //        s.setCurrenValuePosition(3);
         tv.setText(s.getCurrentValue());
 //        s.setCurrenValuePosition(list.size()-1);
@@ -34,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         s.setTextColor(Color.parseColor("#d3d3d4"));
         s.setLineMargin(40);
         s.setLongLineLength(86);
+//        s.setMask(new MaskView(this));
         s.setOnScrollListener(new ScrollScaleView.OnScrollListener() {
             @Override
             public void onScrollCompleted(String value) {
@@ -42,7 +41,15 @@ public class MainActivity extends AppCompatActivity {
         });
 //        s.needBottomLine(false);
 //
-//        ScrollScaleView s2 = (ScrollScaleView) findViewById(R.id.ssv2);
-//        s2.setRangeDataList(list);
+
+
+        TextView tv2 = (TextView) findViewById(R.id.tv2);
+        ScrollScaleView s2 = (ScrollScaleView) findViewById(R.id.ssv2);
+        s2.setRangeDataList(list);
+
+        s.setScaleColor(Color.parseColor("#d3d3d4"));
+        s.setTextColor(Color.parseColor("#d3d3d4"));
+        s.setLineMargin(40);
+        s.setLongLineLength(86);
     }
 }
