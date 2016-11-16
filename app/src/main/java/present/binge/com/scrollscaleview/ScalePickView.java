@@ -4,10 +4,13 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -15,6 +18,15 @@ import java.util.List;
  */
 public class ScalePickView extends FrameLayout {
     private static final String TAG = "ScalePickView";
+    public static final int HORIZONTAL = 0;
+    public static final int VERTICAL = 1;
+
+    @IntDef({HORIZONTAL, VERTICAL})
+
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ORIENTATION {
+    }
+
 
     private ScrollScaleView mScrollScaleView;
     private Pointer mPointer;
@@ -59,8 +71,11 @@ public class ScalePickView extends FrameLayout {
         return mScrollScaleView.getCurrentValue();
     }
 
-    public void setOrientation(@ScrollScaleView.ORIENTATION int orientation) {
+    public void setOrientation(@ORIENTATION int orientation) {
         mScrollScaleView.setOrientation(orientation);
+        if (mPointer != null) {
+            mPointer.setOrientation(orientation);
+        }
     }
 
     public void setMinValue(int minValue) {
@@ -116,11 +131,11 @@ public class ScalePickView extends FrameLayout {
         mPointer.setPointerWidth(pointerWidth);
     }
 
-    public void setMask(View view){
+    public void setMask(View view) {
         mMaskLayout.addView(view);
     }
 
-    public void setMask(@DrawableRes int resId){
+    public void setMask(@DrawableRes int resId) {
         mMaskLayout.setBackgroundResource(resId);
     }
 }

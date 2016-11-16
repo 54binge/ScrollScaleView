@@ -19,6 +19,7 @@ public class Pointer extends View {
     private
     @ColorInt
     int mPointerColor = Color.RED;
+    private int mOrientation;
 
     public Pointer(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -30,15 +31,14 @@ public class Pointer extends View {
         initAttrs(attrs);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        mPaint.setAntiAlias(true);
-        mPaint.setDither(true);
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(mPointerColor);
-        mPaint.setStrokeWidth(mPointerWidth);
-        drawPointer(canvas);
+    private void initAttrs(AttributeSet attrs) {
+        TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ScrollScaleView);
+        if (typedArray != null) {
+            mOrientation = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_orientation, ScalePickView.HORIZONTAL);
+            mPointerLength = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_long_line, 50f);
+            mPointerWidth = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_pointer_width, 3f);
+            typedArray.recycle();
+        }
     }
 
     @Override
@@ -65,16 +65,22 @@ public class Pointer extends View {
         }
     }
 
-    private void drawPointer(Canvas canvas) {
-        canvas.drawLine(getWidth() / 2, getHeight(), getWidth() / 2, getHeight() - mPointerLength, mPaint);
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        mPaint.setAntiAlias(true);
+        mPaint.setDither(true);
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setColor(mPointerColor);
+        mPaint.setStrokeWidth(mPointerWidth);
+        drawPointer(canvas);
     }
 
-    private void initAttrs(AttributeSet attrs) {
-        TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ScrollScaleView);
-        if (typedArray != null) {
-            mPointerLength = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_long_line, 50f);
-            mPointerWidth = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_pointer_width, 3f);
-            typedArray.recycle();
+    private void drawPointer(Canvas canvas) {
+        if (mOrientation == ScalePickView.HORIZONTAL) {
+            canvas.drawLine(getWidth() / 2, getHeight(), getWidth() / 2, getHeight() - mPointerLength, mPaint);
+        } else {
+            canvas.drawLine(0, getHeight() / 2, mPointerLength, getHeight() / 2, mPaint);
         }
     }
 
@@ -84,5 +90,9 @@ public class Pointer extends View {
 
     public void setPointerWidth(int pointerWidth) {
         this.mPointerWidth = pointerWidth;
+    }
+
+    public void setOrientation(@ScalePickView.ORIENTATION int orientation) {
+        mOrientation = orientation;
     }
 }

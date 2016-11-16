@@ -7,14 +7,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
-import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -26,8 +23,7 @@ public class ScrollScaleView extends View {
     private float DEFAULT_WIDTH;
     private float DEFAULT_HEIGHT;
 
-    public static final int HORIZONTAL = 0;
-    public static final int VERTICAL = 1;
+
     private int mOrientation;
     private float mLongLineLength;
     private float mShortLineLength;
@@ -56,15 +52,8 @@ public class ScrollScaleView extends View {
 
     private int mScrollLastX;
     private int mScrollLastY;
-    private float mLeftOffset;
+    private float mDefaultOffset;//初始距原点距离(基于scroller计算，左正右负)
     private float tempOffset = 0f;
-
-
-    @IntDef({HORIZONTAL, VERTICAL})
-
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ORIENTATION {
-    }
 
     public ScrollScaleView(Context context) {
         super(context);
@@ -83,7 +72,7 @@ public class ScrollScaleView extends View {
     private void initAttrs(AttributeSet attrs) {
         TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ScrollScaleView);
         if (typedArray != null) {
-            mOrientation = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_orientation, HORIZONTAL);
+            mOrientation = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_orientation, ScalePickView.HORIZONTAL);
             mLongLineLength = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_long_line, 50f);
             mShortLineLength = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_short_line, 25f);
             mLineMargin = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_line_margin, 20f);
@@ -130,7 +119,7 @@ public class ScrollScaleView extends View {
     }
 
     private void init() {
-        if (mOrientation == HORIZONTAL) {
+        if (mOrientation == ScalePickView.HORIZONTAL) {
             if (mRangeDataList == null || mRangeDataList.isEmpty()) {
                 DEFAULT_WIDTH = (mMaxValue - mMinValue) * mLineMargin;
             } else {
@@ -144,8 +133,8 @@ public class ScrollScaleView extends View {
                 DEFAULT_HEIGHT = (mRangeDataList.size() - 1) * mMultiple * mLineMargin;
             }
             DEFAULT_WIDTH = mLongLineLength + mTextScaleMargin + mTextSize;
-        }
 
+        }
     }
 
     /*-------------onDraw-------------*/
@@ -169,7 +158,7 @@ public class ScrollScaleView extends View {
 
     private void drawLine(Canvas canvas) {
         mPaint.setColor(mScaleColor);
-        if (mOrientation == HORIZONTAL) {
+        if (mOrientation == ScalePickView.HORIZONTAL) {
             canvas.drawLine(0, getHeight(), DEFAULT_WIDTH, getHeight(), mPaint);
         } else {
             canvas.drawLine(0, 0, 0, DEFAULT_HEIGHT, mPaint);
@@ -177,7 +166,7 @@ public class ScrollScaleView extends View {
     }
 
     private void drawScale(Canvas canvas) {
-        if (mOrientation == HORIZONTAL) {
+        if (mOrientation == ScalePickView.HORIZONTAL) {
             if (mRangeDataList != null && !mRangeDataList.isEmpty()) {
                 for (int i = 0; i < mRangeDataList.size(); i++) {
                     float x1 = i * mMultiple * mLineMargin;
@@ -241,6 +230,16 @@ public class ScrollScaleView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (mOrientation == ScalePickView.HORIZONTAL) {
+            return handleHorizontalTouch(event);
+        }
+        if (mOrientation == ScalePickView.VERTICAL) {
+            return handleVerticalTouch(event);
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private boolean handleHorizontalTouch(MotionEvent event) {
         int x = (int) event.getX();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -259,13 +258,13 @@ public class ScrollScaleView extends View {
                 if ((deltaX + mScroller.getFinalX() - DEFAULT_WIDTH) > -getWidth() / 2) {
                     deltaX = -getWidth() / 2 - mScroller.getFinalX() + DEFAULT_WIDTH;
                 }
-
                 smoothScrollBy((int) deltaX, 0);
                 mScrollLastX = x;
+
                 postInvalidate();
                 return true;
             case MotionEvent.ACTION_UP:
-                float deltaOffset = mLeftOffset - mScroller.getFinalX();
+                float deltaOffset = mDefaultOffset - mScroller.getFinalX();
                 float tempOffsetSign = deltaOffset;
                 float abs = Math.abs(deltaOffset % (mMultiple * mLineMargin));
                 if (deltaOffset > 0) {
@@ -279,7 +278,7 @@ public class ScrollScaleView extends View {
                     deltaOffset += Math.copySign((mMultiple * mLineMargin), tempOffsetSign);
                 }
 
-                mScroller.setFinalX((int) (mLeftOffset - deltaOffset));
+                mScroller.setFinalX((int) (mDefaultOffset - deltaOffset));
                 postInvalidate();
 
                 mCurrenValuePosition = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
@@ -294,12 +293,68 @@ public class ScrollScaleView extends View {
 
                 return true;
         }
-        return super.onTouchEvent(event);
+        return true;
+    }
+
+    private boolean handleVerticalTouch(MotionEvent event) {
+        int y = (int) event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (mScroller != null && !mScroller.isFinished()) {
+                    mScroller.abortAnimation();
+                }
+                mScrollLastY = y;
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                float deltaY = mScrollLastY - y;
+
+                if ((deltaY + mScroller.getFinalY()) < -getHeight() / 2) {
+                    deltaY = -getHeight() / 2 - mScroller.getFinalY();
+                }
+                if ((deltaY + mScroller.getFinalY() - DEFAULT_HEIGHT) > -getHeight() / 2) {
+                    deltaY = -getHeight() / 2 - mScroller.getFinalY() + DEFAULT_HEIGHT;
+                }
+                smoothScrollBy(0, (int) deltaY);
+                mScrollLastY = y;
+
+                postInvalidate();
+                return true;
+            case MotionEvent.ACTION_UP:
+                float deltaOffset = mDefaultOffset - mScroller.getFinalY();
+                float tempOffsetSign = deltaOffset;
+                float abs = Math.abs(deltaOffset % (mMultiple * mLineMargin));
+                if (deltaOffset > 0) {
+                    deltaOffset -= abs;
+                } else {
+                    deltaOffset += abs;
+                }
+
+                if (abs > (mMultiple * mLineMargin) / 2) {
+                    //补全
+                    deltaOffset += Math.copySign((mMultiple * mLineMargin), tempOffsetSign);
+                }
+
+                mScroller.setFinalY((int) (mDefaultOffset - deltaOffset));
+                postInvalidate();
+
+                mCurrenValuePosition = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
+
+                tempOffset = deltaOffset;
+
+                if (mOnScrollListener != null) {
+                    if (mRangeDataList != null && mRangeDataList.size() > mCurrenValuePosition && mCurrenValuePosition >= 0) {
+                        mOnScrollListener.onScrollCompleted(String.valueOf(mRangeDataList.get(mCurrenValuePosition)));
+                    }
+                }
+
+                return true;
+        }
+        return true;
     }
 
     /*-----------------set---------------------*/
 
-    public void setOrientation(@ORIENTATION int mOrientation) {
+    public void setOrientation(@ScalePickView.ORIENTATION int mOrientation) {
         this.mOrientation = mOrientation;
     }
 
@@ -320,10 +375,16 @@ public class ScrollScaleView extends View {
         post(new Runnable() {
             @Override
             public void run() {
-                float deltaX = mCurrenValuePosition * mMultiple * mLineMargin - getWidth() / 2;
-                mScroller.setFinalX((int) deltaX);
+                float deltaOffset;
+                if (mOrientation == ScalePickView.HORIZONTAL) {
+                    deltaOffset = mCurrenValuePosition * mMultiple * mLineMargin - getWidth() / 2;
+                    mScroller.setFinalX((int) deltaOffset);
+                } else {
+                    deltaOffset = mCurrenValuePosition * mMultiple * mLineMargin - getHeight() / 2;
+                    mScroller.setFinalY((int) deltaOffset);
+                }
                 postInvalidate();
-                mLeftOffset = deltaX;
+                mDefaultOffset = deltaOffset;
             }
         });
     }

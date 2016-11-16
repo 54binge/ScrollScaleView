@@ -39,17 +39,25 @@ public class MainActivity extends AppCompatActivity {
                 tv.setText(value);
             }
         });
-//        s.needBottomLine(false);
-//
+        s.needBottomLine(true);
 
 
-        TextView tv2 = (TextView) findViewById(R.id.tv2);
-        ScrollScaleView s2 = (ScrollScaleView) findViewById(R.id.ssv2);
+        final TextView tv2 = (TextView) findViewById(R.id.tv2);
+        ScalePickView s2 = (ScalePickView) findViewById(R.id.ssv2);
         s2.setRangeDataList(list);
+        s2.setCurrentValuePosition(3);
+        tv2.setText(s2.getCurrentValue());
 
-        s.setScaleColor(Color.parseColor("#d3d3d4"));
-        s.setTextColor(Color.parseColor("#d3d3d4"));
-        s.setLineMargin(40);
-        s.setLongLineLength(86);
+//        s2.setScaleColor(Color.parseColor("#d3d3d4"));
+//        s2.setTextColor(Color.parseColor("#d3d3d4"));
+        s2.setLineMargin(40);
+        s2.setLongLineLength(86);
+        s2.needBottomLine(true);
+        s2.setOnScrollListener(new ScrollScaleView.OnScrollListener() {
+            @Override
+            public void onScrollCompleted(String value) {
+                tv2.setText(value);
+            }
+        });
     }
 }
