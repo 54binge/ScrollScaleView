@@ -17,9 +17,9 @@ public class MainActivity extends AppCompatActivity {
 
         final TextView tv = (TextView) findViewById(R.id.tv);
 
-        List list = new ArrayList(100);
-        for (int i = 1; i <= 100; i++) {
-            list.add("a" + i);
+        List list = new ArrayList(10);
+        for (int i = 1; i <= 10; i++) {
+            list.add("g" + i);
         }
 
         ScalePickView s = (ScalePickView) findViewById(R.id.ssv);

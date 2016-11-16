@@ -79,7 +79,7 @@ public class ScrollScaleView extends View {
             mMinValue = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_min_value, 0);
             mMaxValue = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_max_value, 100);
             mMultiple = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_multiple, 3);
-            mTextScaleMargin = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_text_scale_margin, 10f);
+            mTextScaleMargin = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_text_scale_margin, 20f);
             mTextSize = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_text_size, 30f);
             mNeedBottomLine = typedArray.getBoolean(R.styleable.ScrollScaleView_scaleview_bottom_line, false);
             typedArray.recycle();
@@ -175,8 +175,7 @@ public class ScrollScaleView extends View {
 
                     mPaint.setColor(mTextColor);
                     mPaint.setTextSize(mTextSize);
-                    canvas.drawText(String.valueOf(mRangeDataList.get(i)), x1, getHeight() - mLongLineLength - mTextScaleMargin, mPaint);
-
+                    canvas.drawLine(x1, getHeight() - mLongLineLength - mTextScaleMargin, x1 - 10, getHeight() - mLongLineLength - mTextScaleMargin, mPaint);
                     if (i == mRangeDataList.size() - 1) {
                         return;
                     }
@@ -196,8 +195,10 @@ public class ScrollScaleView extends View {
 
                     mPaint.setColor(mTextColor);
                     mPaint.setTextSize(mTextSize);
-                    canvas.drawText(String.valueOf(mRangeDataList.get(i)), mLongLineLength + mTextScaleMargin + mTextSize / 2, y1 + mTextSize / 3, mPaint);// TODO: 2016/11/9 垂直文字居中不能简单的/3
 
+                    Paint.FontMetrics fm = mPaint.getFontMetrics();
+                    float baseLine = y1 + (fm.bottom - fm.top) / 2 - 3 * fm.bottom + 2 * fm.descent;
+                    canvas.drawText(String.valueOf(mRangeDataList.get(i)), mLongLineLength + mTextScaleMargin, baseLine, mPaint);
                     if (i == mRangeDataList.size() - 1) {
                         return;
                     }
