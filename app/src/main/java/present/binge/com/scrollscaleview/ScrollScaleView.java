@@ -33,6 +33,7 @@ public class ScrollScaleView extends View {
     private int mMultiple;
     private float mTextScaleMargin;
     private float mTextSize;
+    private int mStepUnit;
 
     private Scroller mScroller;
 
@@ -47,7 +48,7 @@ public class ScrollScaleView extends View {
     private Typeface mTypeface;
     private boolean mNeedBottomLine;
 
-    private int mCurrenValuePosition = 0;
+    private int mCurrenValuePosition;
     private List mRangeDataList;
 
     private int mScrollLastX;
@@ -77,11 +78,12 @@ public class ScrollScaleView extends View {
             mShortLineLength = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_short_line, 25f);
             mLineMargin = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_line_margin, 20f);
             mMinValue = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_min_value, 0);
-            mMaxValue = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_max_value, 100);
+            mMaxValue = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_max_value, mMinValue);
             mMultiple = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_multiple, 3);
             mTextScaleMargin = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_text_scale_margin, 20f);
             mTextSize = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_text_size, 30f);
             mNeedBottomLine = typedArray.getBoolean(R.styleable.ScrollScaleView_scaleview_bottom_line, false);
+            mStepUnit = typedArray.getInt(R.styleable.ScrollScaleView_scaleview_step_unit, 10);
             typedArray.recycle();
         }
 
@@ -175,7 +177,8 @@ public class ScrollScaleView extends View {
 
                     mPaint.setColor(mTextColor);
                     mPaint.setTextSize(mTextSize);
-                    canvas.drawLine(x1, getHeight() - mLongLineLength - mTextScaleMargin, x1 - 10, getHeight() - mLongLineLength - mTextScaleMargin, mPaint);
+                    canvas.drawText(String.valueOf(mRangeDataList.get(i)), x1, getHeight() - mLongLineLength - mTextScaleMargin, mPaint);
+
                     if (i == mRangeDataList.size() - 1) {
                         return;
                     }
@@ -184,6 +187,28 @@ public class ScrollScaleView extends View {
                         mPaint.setColor(mScaleColor);
                         canvas.drawLine(x2, getHeight(), x2, getHeight() - mShortLineLength, mPaint);
                     }
+                }
+            } else if (mMaxValue != mMinValue && mMaxValue > mMinValue) {
+                for (int i = 0, k = mMinValue; i < mMaxValue - mMinValue; i++) {
+                    float x1 = i * mMultiple * mLineMargin;
+                    mPaint.setColor(mScaleColor);
+                    canvas.drawLine(x1, getHeight(), x1, getHeight() - mLongLineLength, mPaint);
+
+                    mPaint.setColor(mTextColor);
+                    mPaint.setTextSize(mTextSize);
+                    canvas.drawText(String.valueOf(k), x1, getHeight() - mLongLineLength - mTextScaleMargin, mPaint);
+
+                    if (k == mMaxValue) {
+                        return;
+                    }
+
+                    for (int j = 1; j < mMultiple; j++) {
+                        float x2 = (i * mMultiple + j) * mLineMargin;
+                        mPaint.setColor(mScaleColor);
+                        canvas.drawLine(x2, getHeight(), x2, getHeight() - mShortLineLength, mPaint);
+                    }
+
+                    k += mStepUnit;
                 }
             }
         } else {
@@ -207,6 +232,30 @@ public class ScrollScaleView extends View {
                         mPaint.setColor(mScaleColor);
                         canvas.drawLine(0, y2, mShortLineLength, y2, mPaint);
                     }
+                }
+            } else if (mMaxValue != mMinValue && mMaxValue > mMinValue) {
+                for (int i = 0, k = mMinValue; i <= mMaxValue - mMinValue; i++) {
+                    float y1 = i * mMultiple * mLineMargin;
+                    mPaint.setColor(mScaleColor);
+                    canvas.drawLine(0, y1, mLongLineLength, y1, mPaint);
+
+                    mPaint.setColor(mTextColor);
+                    mPaint.setTextSize(mTextSize);
+                    Paint.FontMetrics fm = mPaint.getFontMetrics();
+                    float baseLine = y1 + (fm.bottom - fm.top) / 2 - 3 * fm.bottom + 2 * fm.descent;
+                    canvas.drawText(String.valueOf(k), mLongLineLength + mTextScaleMargin, baseLine, mPaint);
+
+                    if (k == mMaxValue) {
+                        return;
+                    }
+
+                    for (int j = 1; j < mMultiple; j++) {
+                        float y2 = (i * mMultiple + j) * mLineMargin;
+                        mPaint.setColor(mScaleColor);
+                        canvas.drawLine(0, y2, mShortLineLength, y2, mPaint);
+                    }
+
+                    k += mStepUnit;
                 }
             }
         }
@@ -287,9 +336,7 @@ public class ScrollScaleView extends View {
                 tempOffset = deltaOffset;
 
                 if (mOnScrollListener != null) {
-                    if (mRangeDataList != null && mRangeDataList.size() > mCurrenValuePosition && mCurrenValuePosition >= 0) {
-                        mOnScrollListener.onScrollCompleted(String.valueOf(mRangeDataList.get(mCurrenValuePosition)));
-                    }
+                    mOnScrollListener.onScrollCompleted(getCurrentValue());
                 }
 
                 return true;
@@ -343,9 +390,7 @@ public class ScrollScaleView extends View {
                 tempOffset = deltaOffset;
 
                 if (mOnScrollListener != null) {
-                    if (mRangeDataList != null && mRangeDataList.size() > mCurrenValuePosition && mCurrenValuePosition >= 0) {
-                        mOnScrollListener.onScrollCompleted(String.valueOf(mRangeDataList.get(mCurrenValuePosition)));
-                    }
+                    mOnScrollListener.onScrollCompleted(getCurrentValue());
                 }
 
                 return true;
@@ -376,25 +421,30 @@ public class ScrollScaleView extends View {
         post(new Runnable() {
             @Override
             public void run() {
-                float deltaOffset;
-                if (mOrientation == ScalePickView.HORIZONTAL) {
-                    deltaOffset = mCurrenValuePosition * mMultiple * mLineMargin - getWidth() / 2;
-                    mScroller.setFinalX((int) deltaOffset);
-                } else {
-                    deltaOffset = mCurrenValuePosition * mMultiple * mLineMargin - getHeight() / 2;
-                    mScroller.setFinalY((int) deltaOffset);
+                float deltaOffset = 0;
+                if ((mRangeDataList != null && mRangeDataList.size() > mCurrenValuePosition && mCurrenValuePosition >= 0) || (mMaxValue != mMinValue && mMaxValue > mMinValue)) {
+                    if (mOrientation == ScalePickView.HORIZONTAL) {
+                        deltaOffset = mCurrenValuePosition * mMultiple * mLineMargin - getWidth() / 2;
+                        mScroller.setFinalX((int) deltaOffset);
+                    } else {
+                        deltaOffset = mCurrenValuePosition * mMultiple * mLineMargin - getHeight() / 2;
+                        mScroller.setFinalY((int) deltaOffset);
+                    }
                 }
+
                 postInvalidate();
                 mDefaultOffset = deltaOffset;
             }
         });
     }
 
-    public void setCurrentValue(String defaultValue) {
+    public void setCurrentValue(final String defaultValue) {
         if (mRangeDataList != null && mRangeDataList.contains(defaultValue)) {
             mCurrenValuePosition = mRangeDataList.indexOf(defaultValue);
-            setCurrentValuePosition(mCurrenValuePosition);
+        } else if (mMaxValue != mMinValue && mMaxValue > mMinValue) {
+            mCurrenValuePosition = (int) (Float.valueOf(defaultValue) - mMinValue) / mStepUnit;
         }
+        setCurrentValuePosition(mCurrenValuePosition);
     }
 
     public void setLongLineLength(int mLongLineLength) {
@@ -447,7 +497,21 @@ public class ScrollScaleView extends View {
     public String getCurrentValue() {
         if (mRangeDataList != null && mRangeDataList.size() > mCurrenValuePosition && mCurrenValuePosition >= 0) {
             return String.valueOf(mRangeDataList.get(mCurrenValuePosition));
+        } else if (mMaxValue != mMinValue && mMaxValue > mMinValue) {
+            return String.valueOf(mMinValue + mCurrenValuePosition * mStepUnit);
         }
         return "";
+    }
+
+    public void setStepUnit(int stepUnit) {
+        if (stepUnit <= 0 || stepUnit > mMaxValue || mMaxValue % stepUnit != 0) {
+            throw new RuntimeException("stepUnit must in (0," + mMaxValue + "], and " + mMaxValue + "%stepUnit==0 is true");
+        } else {
+            mStepUnit = stepUnit;
+        }
+    }
+
+    public void setMultiple(int multiple) {
+        this.mMultiple = multiple;
     }
 }

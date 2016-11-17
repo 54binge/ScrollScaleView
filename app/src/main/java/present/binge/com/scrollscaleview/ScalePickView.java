@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.support.annotation.IntRange;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -137,5 +138,13 @@ public class ScalePickView extends FrameLayout {
 
     public void setMask(@DrawableRes int resId) {
         mMaskLayout.setBackgroundResource(resId);
+    }
+
+    public void setStepUnit(int stepUnit) {
+        mScrollScaleView.setStepUnit(stepUnit);
+    }
+
+    public void setMultiple(int multiple) {
+        mScrollScaleView.setMultiple(multiple);
     }
 }
