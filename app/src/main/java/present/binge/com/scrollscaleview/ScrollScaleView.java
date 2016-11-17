@@ -34,6 +34,7 @@ public class ScrollScaleView extends View {
     private float mTextScaleMargin;
     private float mTextSize;
     private int mStepUnit;
+    private float mLineWidth;
 
     private Scroller mScroller;
 
@@ -84,6 +85,9 @@ public class ScrollScaleView extends View {
             mTextSize = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_text_size, 30f);
             mNeedBottomLine = typedArray.getBoolean(R.styleable.ScrollScaleView_scaleview_bottom_line, false);
             mStepUnit = typedArray.getInt(R.styleable.ScrollScaleView_scaleview_step_unit, 10);
+            mLineWidth = typedArray.getDimension(R.styleable.ScrollScaleView_scaleview_line_width, 4);
+            mTextColor = typedArray.getColor(R.styleable.ScrollScaleView_scaleview_text_color, Color.BLACK);
+            mScaleColor = typedArray.getColor(R.styleable.ScrollScaleView_scaleview_line_color, mTextColor);
             typedArray.recycle();
         }
 
@@ -148,6 +152,7 @@ public class ScrollScaleView extends View {
         mPaint.setDither(true);
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setTextAlign(Paint.Align.CENTER);
+        mPaint.setStrokeWidth(mLineWidth);
         if (mTypeface != null) {
             mPaint.setTypeface(mTypeface);
         }
@@ -280,13 +285,14 @@ public class ScrollScaleView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (mOrientation == ScalePickView.HORIZONTAL) {
-            return handleHorizontalTouch(event);
+        if (getParent() != null) {
+            getParent().requestDisallowInterceptTouchEvent(true);
         }
         if (mOrientation == ScalePickView.VERTICAL) {
             return handleVerticalTouch(event);
+        } else {
+            return handleHorizontalTouch(event);
         }
-        return super.onTouchEvent(event);
     }
 
     private boolean handleHorizontalTouch(MotionEvent event) {

@@ -147,4 +147,5 @@ public class ScalePickView extends FrameLayout {
     public void setMultiple(int multiple) {
         mScrollScaleView.setMultiple(multiple);
     }
+
 }

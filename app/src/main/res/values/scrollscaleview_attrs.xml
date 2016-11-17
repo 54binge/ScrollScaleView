@@ -29,5 +29,9 @@
         <attr name="scaleview_pointer_width" format="dimension" />
         <attr name="scaleview_bottom_line" format="boolean" />
         <attr name="scaleview_step_unit" format="integer" />
+        <attr name="scaleview_pointer_color" format="color" />
+        <attr name="scaleview_text_color" format="color" />
+        <attr name="scaleview_line_color" format="color" />
+        <attr name="scaleview_line_width" format="dimension" />
     </declare-styleable>
 </resources>

@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
 //        s.setCurrentValue("a3");
 //        s.setCurrenValuePosition(3);
 
-        s.setMaxValue(30);
-        s.setMinValue(10);
+//        s.setMaxValue(30);
+//        s.setMinValue(10);
         s.setStepUnit(10);
         s.setMultiple(10);
 //        s.setCurrentValue("30");
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 //        s.setScaleColor(Color.parseColor("#d3d3d4"));
 //        s.setTextColor(Color.parseColor("#d3d3d4"));
         s.setLineMargin(40);
-        s.setLongLineLength(86);
+//        s.setLongLineLength(86);
 
 //        s.setMask(new MaskView(this));
         s.setOnScrollListener(new ScrollScaleView.OnScrollListener() {

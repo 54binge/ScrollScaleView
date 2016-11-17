@@ -12,7 +12,7 @@ import android.view.View;
 /**
  * Created by Administrator on 2016/11/15.
  */
-class MaskView extends View {
+public class MaskView extends View {
 
     private int DEFAULT_WIDTH;
     private int DEFAULT_HEIGHT;

@@ -23,6 +23,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/tv"
         android:layout_marginTop="40dp"
+        app:scaleview_max_value="40"
+        app:scaleview_min_value="10"
+        app:scaleview_long_line="15dp"
         app:scaleview_orientation="horizontal" />
 
 
