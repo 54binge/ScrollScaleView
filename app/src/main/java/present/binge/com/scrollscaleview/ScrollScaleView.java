@@ -35,6 +35,7 @@ public class ScrollScaleView extends View {
     private float mTextSize;
     private int mStepUnit;
     private float mLineWidth;
+    private float mDefaultStrokeWidth;
 
     private Scroller mScroller;
 
@@ -72,6 +73,7 @@ public class ScrollScaleView extends View {
     }
 
     private void initAttrs(AttributeSet attrs) {
+        mDefaultStrokeWidth = mPaint.getStrokeWidth();
         TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.ScrollScaleView);
         if (typedArray != null) {
             mOrientation = typedArray.getInteger(R.styleable.ScrollScaleView_scaleview_orientation, ScalePickView.HORIZONTAL);
@@ -182,6 +184,7 @@ public class ScrollScaleView extends View {
 
                     mPaint.setColor(mTextColor);
                     mPaint.setTextSize(mTextSize);
+                    mPaint.setStrokeWidth(mDefaultStrokeWidth);
                     canvas.drawText(String.valueOf(mRangeDataList.get(i)), x1, getHeight() - mLongLineLength - mTextScaleMargin, mPaint);
 
                     if (i == mRangeDataList.size() - 1) {
@@ -339,11 +342,11 @@ public class ScrollScaleView extends View {
 
                 mCurrenValuePosition = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
 
-                tempOffset = deltaOffset;
-
                 if (mOnScrollListener != null) {
                     mOnScrollListener.onScrollCompleted(getCurrentValue());
                 }
+
+                tempOffset = deltaOffset;
 
                 return true;
         }
@@ -393,11 +396,11 @@ public class ScrollScaleView extends View {
 
                 mCurrenValuePosition = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
 
-                tempOffset = deltaOffset;
-
                 if (mOnScrollListener != null) {
                     mOnScrollListener.onScrollCompleted(getCurrentValue());
                 }
+
+                tempOffset = deltaOffset;
 
                 return true;
         }
