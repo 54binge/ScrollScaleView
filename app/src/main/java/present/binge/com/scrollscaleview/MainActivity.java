@@ -16,20 +16,20 @@ public class MainActivity extends AppCompatActivity {
 
         final TextView tv = (TextView) findViewById(R.id.tv);
 
-        List list = new ArrayList(10);
-        for (int i = 1; i <= 10; i++) {
+        List list = new ArrayList(100);
+        for (int i = 1; i <= 100; i++) {
             list.add("g" + i);
         }
 
         ScalePickView s = (ScalePickView) findViewById(R.id.ssv);
-//        s.setRangeDataList(list);
+        s.setRangeDataList(list);
 //        s.setCurrentValue("a3");
 //        s.setCurrenValuePosition(3);
 
 //        s.setMaxValue(30);
 //        s.setMinValue(10);
-        s.setStepUnit(10);
-        s.setMultiple(10);
+//        s.setStepUnit(1);
+        s.setMultiple(5);
 //        s.setCurrentValue("30");
         s.setCurrentValuePosition(1);
 
@@ -52,12 +52,12 @@ public class MainActivity extends AppCompatActivity {
 
         final TextView tv2 = (TextView) findViewById(R.id.tv2);
         ScalePickView s2 = (ScalePickView) findViewById(R.id.ssv2);
-//        s2.setRangeDataList(list);
-        s2.setMaxValue(50);
-        s2.setMinValue(20);
-        s2.setStepUnit(10);
-        s2.setMultiple(10);
-        s2.setCurrentValuePosition(3);
+        s2.setRangeDataList(list);
+//        s2.setMaxValue(50);
+//        s2.setMinValue(20);
+//        s2.setStepUnit(10);
+        s2.setMultiple(5);
+//        s2.setCurrentValuePosition(3);
         tv2.setText(s2.getCurrentValue());
 
 //        s2.setScaleColor(Color.parseColor("#d3d3d4"));
