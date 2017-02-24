@@ -7,8 +7,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.support.annotation.ColorInt;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.widget.Scroller;
 
@@ -19,7 +22,7 @@ import java.util.List;
  */
 
 public class ScrollScaleView extends View {
-    private static final String TAG = "ScrollScaleView";
+    private static final String TAG = "ScalePickView";
     private float DEFAULT_WIDTH;
     private float DEFAULT_HEIGHT;
 
@@ -38,6 +41,7 @@ public class ScrollScaleView extends View {
     private float mDefaultStrokeWidth;
 
     private Scroller mScroller;
+    private VelocityTracker mVelocityTracker;
 
     private Paint mPaint = new Paint();
     private
@@ -57,6 +61,10 @@ public class ScrollScaleView extends View {
     private int mScrollLastY;
     private float mDefaultOffset;//初始距原点距离(基于scroller计算，左正右负)
     private float tempOffset = 0f;
+    private String lastValue;
+    private boolean isOnTouch;
+
+    private boolean isScrollFinishToCallback;
 
     public ScrollScaleView(Context context) {
         super(context);
@@ -193,6 +201,7 @@ public class ScrollScaleView extends View {
                     for (int j = 1; j < mMultiple; j++) {
                         float x2 = (i * mMultiple + j) * mLineMargin;
                         mPaint.setColor(mScaleColor);
+                        mPaint.setStrokeWidth(mLineWidth);
                         canvas.drawLine(x2, getHeight(), x2, getHeight() - mShortLineLength, mPaint);
                     }
                 }
@@ -280,6 +289,12 @@ public class ScrollScaleView extends View {
             // 通过重绘来不断调用computeScroll
             invalidate();
         }
+
+        if (mScroller.isFinished() && isScrollFinishToCallback) {
+            lastValue = getCurrentValue();
+            mOnScrollListener.onScrollCompleted(lastValue);
+            isScrollFinishToCallback = false;
+        }
     }
 
     public void smoothScrollBy(int dx, int dy) {
@@ -291,6 +306,9 @@ public class ScrollScaleView extends View {
         if (getParent() != null) {
             getParent().requestDisallowInterceptTouchEvent(true);
         }
+
+        obtainVelocityTracker(event);
+
         if (mOrientation == ScalePickView.VERTICAL) {
             return handleVerticalTouch(event);
         } else {
@@ -302,10 +320,12 @@ public class ScrollScaleView extends View {
         int x = (int) event.getX();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                isOnTouch = true;
                 if (mScroller != null && !mScroller.isFinished()) {
                     mScroller.abortAnimation();
                 }
                 mScrollLastX = x;
+                isScrollFinishToCallback = false;
                 return true;
             case MotionEvent.ACTION_MOVE:
                 float deltaX = mScrollLastX - x;
@@ -323,6 +343,16 @@ public class ScrollScaleView extends View {
                 postInvalidate();
                 return true;
             case MotionEvent.ACTION_UP:
+                mVelocityTracker.computeCurrentVelocity(1000);
+                int initialVelocity = (int) mVelocityTracker.getXVelocity();
+                if (Math.abs(initialVelocity) > 800) {
+                    mScroller.forceFinished(true);
+                    mScroller.fling(mScroller.getCurrX(), mScroller.getCurrY(),
+                            -initialVelocity, 0,
+                            -getWidth() / 2, (int) (DEFAULT_WIDTH - getWidth() / 2), 0, 0);
+                }
+                releaseVelocityTracker();
+
                 float deltaOffset = mDefaultOffset - mScroller.getFinalX();
                 float tempOffsetSign = deltaOffset;
                 float abs = Math.abs(deltaOffset % (mMultiple * mLineMargin));
@@ -338,16 +368,18 @@ public class ScrollScaleView extends View {
                 }
 
                 mScroller.setFinalX((int) (mDefaultOffset - deltaOffset));
-                postInvalidate();
+                ViewCompat.postInvalidateOnAnimation(this);
 
-                mCurrenValuePosition = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
+                int mCurrenValuePositionTmp = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
 
-                if (mOnScrollListener != null) {
-                    mOnScrollListener.onScrollCompleted(getCurrentValue());
+                if (mOnScrollListener != null && mCurrenValuePositionTmp != mCurrenValuePosition) {
+                    mCurrenValuePosition = mCurrenValuePositionTmp;
+                    isScrollFinishToCallback = true;
                 }
-
+                mCurrenValuePosition = mCurrenValuePositionTmp;
                 tempOffset = deltaOffset;
 
+                isOnTouch = false;
                 return true;
         }
         return true;
@@ -357,10 +389,12 @@ public class ScrollScaleView extends View {
         int y = (int) event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                isOnTouch = true;
                 if (mScroller != null && !mScroller.isFinished()) {
                     mScroller.abortAnimation();
                 }
                 mScrollLastY = y;
+                isScrollFinishToCallback = false;
                 return true;
             case MotionEvent.ACTION_MOVE:
                 float deltaY = mScrollLastY - y;
@@ -377,6 +411,16 @@ public class ScrollScaleView extends View {
                 postInvalidate();
                 return true;
             case MotionEvent.ACTION_UP:
+                mVelocityTracker.computeCurrentVelocity(1000);
+                int initialVelocity = (int) mVelocityTracker.getYVelocity();
+                if (Math.abs(initialVelocity) > 800) {
+                    mScroller.forceFinished(true);
+                    mScroller.fling(mScroller.getCurrX(), mScroller.getCurrY(),
+                            0, -initialVelocity, 0, 0,
+                            -getHeight() / 2, (int) (DEFAULT_HEIGHT - getHeight() / 2));
+                }
+                releaseVelocityTracker();
+
                 float deltaOffset = mDefaultOffset - mScroller.getFinalY();
                 float tempOffsetSign = deltaOffset;
                 float abs = Math.abs(deltaOffset % (mMultiple * mLineMargin));
@@ -392,19 +436,36 @@ public class ScrollScaleView extends View {
                 }
 
                 mScroller.setFinalY((int) (mDefaultOffset - deltaOffset));
-                postInvalidate();
+                ViewCompat.postInvalidateOnAnimation(this);
 
-                mCurrenValuePosition = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
+                int mCurrenValuePositionTmp = (int) (mCurrenValuePosition - (deltaOffset - tempOffset) / (mMultiple * mLineMargin));
 
-                if (mOnScrollListener != null) {
-                    mOnScrollListener.onScrollCompleted(getCurrentValue());
+                if (mOnScrollListener != null && mCurrenValuePositionTmp != mCurrenValuePosition) {
+                    mCurrenValuePosition = mCurrenValuePositionTmp;
+                    isScrollFinishToCallback = true;
                 }
 
+                mCurrenValuePosition = mCurrenValuePositionTmp;
                 tempOffset = deltaOffset;
 
+                isOnTouch = false;
                 return true;
         }
         return true;
+    }
+
+    private void obtainVelocityTracker(MotionEvent event) {
+        if (mVelocityTracker == null) {
+            mVelocityTracker = VelocityTracker.obtain();
+        }
+        mVelocityTracker.addMovement(event);
+    }
+
+    private void releaseVelocityTracker() {
+        if (mVelocityTracker != null) {
+            mVelocityTracker.recycle();
+            mVelocityTracker = null;
+        }
     }
 
     /*-----------------set---------------------*/
@@ -441,6 +502,7 @@ public class ScrollScaleView extends View {
                     }
                 }
 
+                tempOffset = 0f;
                 postInvalidate();
                 mDefaultOffset = deltaOffset;
             }
@@ -489,7 +551,29 @@ public class ScrollScaleView extends View {
     }
 
     public void setRangeDataList(List mRangeDataList) {
+        if (isOnTouch) {
+            return;
+        }
+        if (mRangeDataList.contains(lastValue)) {
+            mCurrenValuePosition = mRangeDataList.indexOf(lastValue);
+        } else if (this.mRangeDataList != null) {
+            int length = (this.mRangeDataList.size() - 1) / 2;
+            if (mCurrenValuePosition > length) {
+                mCurrenValuePosition = mRangeDataList.size() - 1;
+            } else if (mCurrenValuePosition < length) {
+                mCurrenValuePosition = 0;
+            } else {
+                mCurrenValuePosition = (mRangeDataList.size() - 1) / 2;
+            }
+        } else {
+            mCurrenValuePosition = 0;
+        }
+
         this.mRangeDataList = mRangeDataList;
+        init();
+        tempOffset = 0f;
+
+        setCurrentValuePosition(mCurrenValuePosition);
         postInvalidate();
     }
 
@@ -508,6 +592,8 @@ public class ScrollScaleView extends View {
             return String.valueOf(mRangeDataList.get(mCurrenValuePosition));
         } else if (mMaxValue != mMinValue && mMaxValue > mMinValue) {
             return String.valueOf(mMinValue + mCurrenValuePosition * mStepUnit);
+        } else {
+            Log.d(TAG, "---------出错了----------");
         }
         return "";
     }
@@ -523,4 +609,5 @@ public class ScrollScaleView extends View {
     public void setMultiple(int multiple) {
         this.mMultiple = multiple;
     }
+
 }
